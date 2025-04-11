@@ -161,7 +161,7 @@ String getYears() {
 // UPDATE LOGIC
 // =========================
 
-void update() {//update the program each frame
+void update(){//update the program each frame
   deltaT = timeMult / FRAMERATE;//seconds foward each frame
   if (MOVING) {//if we are moving
     if (SPRING_FORCE) {
@@ -409,7 +409,7 @@ void collide(Orb a, Orb b) {
   }
 }
 
-void moveOrbs() {
+void moveOrbs(){
   if (linked) {
     Node tempNode = slinky.front;
     while (tempNode != null) {
@@ -524,6 +524,7 @@ void addOrb(Orb orb) {//add a specific orb
 void setConstants(){
   if(gameState == 0 || gameState == 1){
     //set booleans
+    SPIKES = false;
     tails = false;
     IMPALE = true;
     BOUNCE_FORCE = true;
@@ -784,7 +785,7 @@ double MIN_MASS = 10;
 double MAX_MASS = 100;
 double MAX_SIZE = 50;
 double MIN_SIZE = 10;
-int FRAMERATE = 120;
+int FRAMERATE = 200;
 int NUM_ORBS = 10;
 int  NUM_SPIKES = 10;
 double PIXELS_PER_METER = 100;
