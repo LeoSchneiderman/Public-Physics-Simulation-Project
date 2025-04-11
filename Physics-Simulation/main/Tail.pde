@@ -2,6 +2,7 @@ class Tail{
   TailNode front;
   TailNode end;
   double timePassed;
+  double maxTime = 24 * 3600 * 31 * 6;
   
   Tail(){}
   
@@ -35,7 +36,7 @@ class Tail{
   
   void limit(){
     if(gameState == 2){
-      while(timePassed > (double)3600 * 24 * 31 * 6){
+      while(timePassed > maxTime){
         removeEnd();
       }
     } else {

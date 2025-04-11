@@ -107,6 +107,7 @@ void drawPauseMenu() {
     "d - Toggle Drag: " + DRAG_FORCE + "\n" +
     "f - Toggle Tails: " + tails + "\n" +
     "l - Toggle List Mode: " + (linked ? "Linked List" : "Array") + "\n" +
+    "a -  Toggle asteroid creation \n" +
     "m - Toggle Whether Spikes Spawn: " + SPIKES + "\n" +
     "f - Toggle Tails : " + tails + "\n" +
     "up arrow for faster simulation \n down arrow for slower \n Current timeMultiplier: " + timeMult + "\n" +
@@ -132,7 +133,7 @@ void displayTime() {//display the time that has passed
     text += getYears() + " years";
   }
   textAlign(LEFT);
-  text(text, 100, height * 4 / 5);
+  text(text, 50, height * 19 / 20);
 }
 
 String getSeconds() {
@@ -218,9 +219,9 @@ void keyPressed() {
   } else if (key == 'i') {
     IMPALE = !IMPALE;
   } else if (keyCode == UP) {
-    speedUp(timeMult / 10);
+    speedUp(timeMult / 20);
   } else if (keyCode == DOWN) {
-    slowDown(timeMult / 10);
+    slowDown(timeMult / 20);
   } else if (key == 'p') {
     paused = !paused;
     MOVING = !paused;
@@ -236,6 +237,8 @@ void keyPressed() {
     tails = !tails;
   } else if (key == 'r'){
     makeOrbs(gameState);
+  }  else  if (key == 'a'){
+    ASTEROIDS = !ASTEROIDS;
   }
 }
 
@@ -530,7 +533,6 @@ void addOrb(Orb orb) {//add a specific orb
 void setConstants(){
   if(gameState == 0 || gameState == 1){
     //set booleans
-    SPIKES = false;
     tails = false;
     IMPALE = true;
     BOUNCE_FORCE = true;
@@ -615,6 +617,9 @@ void makeOrbs(boolean ordered) {//makes orbs ordered or unordered
     }
     addOrb(tempOrb);
   }
+  if(SPIKES){
+    makeSpikes(10);
+  }
 }
 
 void makeSolarSystem() {//make the solar system
@@ -622,56 +627,57 @@ void makeSolarSystem() {//make the solar system
   orbs = new Orb[NUM_ORBS];
   slinky = null;
   // Create and initialize each celestial body
-  earth = new CelestialObject(0, distanceEarth, 10, massEarth, sizeEarth);//celestial bodies are described  by their location and size in space, not pixels. Attached is false by default.
+  earth = new CelestialObject(0, distanceEarth, massEarth, 10, sizeEarth);//celestial bodies are described  by their location and size in space, not pixels. Attached is false by default.
   earth.c = color(0, 0, 255);
   earth.velocity.set(29784, 0);
   earth.updatePixels();
 
-  sun = new CelestialObject(0, 0, 25, massSun, sizeSun);
+  sun = new CelestialObject(0, 0, massSun, 25, sizeSun);
+  sun.tail.maxTime = (double)3600 * 24 * 365 * 100;
   sun.c = color(255, 100, 0);
   sun.updatePixels();
 
-  mars = new CelestialObject(0, distanceMars, 10, massMars, sizeMars);
+  mars = new CelestialObject(0, distanceMars, massMars, 10, sizeMars);
   mars.c = color(255, 0, 0);
   mars.velocity.set(velocityMars, 0);
   mars.updatePixels();
 
-  venus = new CelestialObject(0, distanceVenus, 10, massVenus, sizeVenus);
+  venus = new CelestialObject(0, distanceVenus, massVenus, 10, sizeVenus);
   venus.c = color(165, 124, 27);
   venus.velocity.set(velocityVenus, 0);
   venus.updatePixels();
 
-  mercury = new CelestialObject(0, distanceMercury, 10, massMercury, sizeMercury);
+  mercury = new CelestialObject(0, distanceMercury, massMercury, 10, sizeMercury);
   mercury.c = color(183, 184, 185);
   mercury.velocity.set(velocityMercury, 0);
   mercury.updatePixels();
 
-  jupiter = new CelestialObject(0, distanceJupiter, 15, massJupiter, sizeJupiter);
+  jupiter = new CelestialObject(0, distanceJupiter, massJupiter, 15, sizeJupiter);
   jupiter.c = color(180, 167, 158);
   jupiter.velocity.set(velocityJupiter, 0);
   jupiter.updatePixels();
 
-  saturn = new CelestialObject(0, distanceSaturn, 13, massSaturn, sizeSaturn);
+  saturn = new CelestialObject(0, distanceSaturn, massSaturn, 13, sizeSaturn);
   saturn.c = color(210, 180, 140);
   saturn.velocity.set(velocitySaturn, 0);
   saturn.updatePixels();
 
-  uranus = new CelestialObject(0, distanceUranus, 12, massUranus, sizeUranus);
+  uranus = new CelestialObject(0, distanceUranus, massUranus, 12, sizeUranus);
   uranus.c = color(173, 216, 230);
   uranus.velocity.set(velocityUranus, 0);
   uranus.updatePixels();
 
-  neptune = new CelestialObject(0, distanceNeptune, 12, massNeptune, sizeNeptune);
+  neptune = new CelestialObject(0, distanceNeptune, massNeptune, 12, sizeNeptune);
   neptune.c = color(72, 61, 139);
   neptune.velocity.set(velocityNeptune, 0);
   neptune.updatePixels();
 
-  pluto = new CelestialObject(0, distancePluto, 4, massPluto, sizePluto);
+  pluto = new CelestialObject(0, distancePluto, massPluto, 4, sizePluto);
   pluto.c = color(190, 190, 190);
   pluto.velocity.set(velocityPluto, 0);
   pluto.updatePixels();
 
-  moon = new CelestialObject(0, earth.centerMeters.y + distanceMoonFromEarth, 3, massMoon, sizeMoon);
+  moon = new CelestialObject(0, earth.centerMeters.y + distanceMoonFromEarth, massMoon, 3, sizeMoon);
   moon.c = color(255);
   moon.velocity.set(velocityMoonFromEarth + velocityEarth, 0);
   moon.updatePixels();
@@ -688,11 +694,31 @@ void makeSolarSystem() {//make the solar system
   addOrb(uranus);
   addOrb(neptune);
   addOrb(pluto);
+  if(ASTEROIDS){
+    makeAsteroidBelt();
+  }
   
   PVectorD solarMomentum = getSolarSystemMomentum().mult(-1);
   sun.velocity = sun.momentumToVelocity(solarMomentum);
   if(linked){
     slinky.end.velocity = sun.velocity;
+  }
+}
+
+void makeAsteroidBelt(){
+  for(int i = 0; i < 100; i++){
+    double kgPerMeter3 = random(1000, 4000);
+    double radius = random(5000);
+    double volume = Math.pow(radius, 3) * 4 * PI / 3;
+    double mass = volume * kgPerMeter3;
+    double distance = distanceJupiter * random(0.7, 0.9);
+    double speed = velocityJupiter * Math.sqrt(distanceJupiter / distance);
+    float angle = random(2 * PI);
+    Orb asteroid = new CelestialObject(distance * cos(angle), distance * sin(angle), mass, 1, radius * 2);
+    asteroid.velocity.set(speed * sin(angle), speed * -cos(angle));
+    asteroid.c = color(255);
+    asteroid.tail.maxTime = 3600 * 24 * 5;
+    addOrb(asteroid);
   }
 }
 
@@ -821,6 +847,7 @@ double K_CONSTANT = 100;
 double DRAG_CONSTANT = 10;
 double SPRING_LENGTH = 0.5;
 // Toggles
+boolean ASTEROIDS = true;
 boolean GRAVITY_FORCE;
 boolean SPRING_FORCE;
 boolean DRAG_FORCE;
@@ -830,7 +857,7 @@ boolean MOVING;
 boolean IMPALE;
 boolean paused = true;
 boolean linked = false;//linked list vs array
-boolean SPIKES = true;
+boolean SPIKES = false;
 boolean toScale = false;
 boolean tails = false;
 int gameState = 0;//0 is ordered. 1 is unordered. 2 is solar system

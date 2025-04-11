@@ -2,6 +2,7 @@ import java.lang.Math;
 
 class Orb {
   // Fields
+  
   PVectorD center;            // Location in pixels (100 pixels = 1 meter)
   PVectorD centerMeters;      // Location in meters
   PVectorD acceleration;      // Acceleration (m/s^2)
@@ -14,6 +15,7 @@ class Orb {
   color c;                    // Orb color
   boolean fixed;              // Is orb fixed in space
   boolean attached;           // Is orb attached by a spring
+  boolean hasTail;            // Has a tale?
   Tail tail;
 
   // Constructor with parameters
@@ -30,6 +32,8 @@ class Orb {
     fixed = false;
     attached = true;
     setColor();
+    hasTail = true;
+    
     tail = new Tail();
   }
 
@@ -56,14 +60,14 @@ class Orb {
     } else {
       circle((float)center.x, (float)center.y, (float)size);
     }
-    if(tails){
+    if(tails && hasTail){
       tail.display();
     }
   }
   
   // Physics movement
   void move() {
-    tail.addFront(centerMeters.x, centerMeters.y);
+    if(hasTail){ tail.addFront(centerMeters.x, centerMeters.y); }
     velocity.add(acceleration.copy().mult(deltaT));
     centerMeters.add(velocity.copy().mult(deltaT));
     acceleration.mult(0);
@@ -181,6 +185,8 @@ class Orb {
     tempNode.attached = attached;           // Is orb attached by a spring
     tempNode.radiusMeters = radiusMeters;
     tempNode.sizeMeters = sizeMeters;
+    tempNode.tail = tail;
+    tempNode.hasTail = hasTail;
     return tempNode;
   }
 }
