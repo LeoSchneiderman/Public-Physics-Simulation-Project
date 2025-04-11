@@ -409,7 +409,7 @@ void collide(Orb a, Orb b) {
   }
 }
 
-void moveOrbs(){
+void moveOrbs(){//move all orbs
   if (linked) {
     Node tempNode = slinky.front;
     while (tempNode != null) {
@@ -430,7 +430,7 @@ void moveOrbs(){
 // =========================
 
 
-void reset(int GAMESTATE){
+void reset(int GAMESTATE){//FULLY RESET THE SIMULATION RESTORING CONSTANTS AND BOOLEANS
   gameState = GAMESTATE;
   setConstants();
   if(gameState == 0){
@@ -442,7 +442,7 @@ void reset(int GAMESTATE){
   }
 }
 
-void reset(){
+void reset(){//FULLY RESET  THE GAME SIMULATION RESTORING CONSTANTS AND BOOLEANS
   reset(gameState);
 }
 
@@ -496,7 +496,7 @@ void removeOrb(int j) {//remove an orb at index j
 
 
 void addOrb() {//add an orb
-  Orb tempOrb =new Orb();//make a new orb
+  Orb tempOrb = new Orb();//make a new orb
   if (gameState == 0 && !linked) {
     tempOrb.center.x = SPRING_LENGTH * NUM_ORBS * PIXELS_PER_METER;//locate it in order if ordered game state. ONly works for array data tyep.
     tempOrb.center.y = height / 2;
@@ -518,7 +518,13 @@ void addOrb(Orb orb) {//add a specific orb
     for (int i = 0; i < orbs.length; i++) { tempOrbs[i] = orbs[i]; }//copy the contents of the old array into the new one
     orbs = tempOrbs;//orbs is now the newly created array
     addOrb(orb);//we add the orb to the new arary
-  } else { slinky.addFront(orb.toNode()); }//if not an array, add a node copy of the orb to the slinky data
+  } else {
+    if(slinky != null){
+      slinky.addFront(orb.toNode()); 
+    } else {
+      slinky = new NodeList(orb.toNode());
+    }
+  }//if not an array, add a node copy of the orb to the slinky data
 }
 
 void setConstants(){
@@ -576,7 +582,7 @@ void makeSpikes(int num) {//makes spikes. num is the number of spikes.
   }
 }
 
-void makeOrbs(int GAMESTATE){//make a new simulation. Keep booleans in place but adjust time mult for simulation. 
+void makeOrbs(int GAMESTATE){//make a new simulation WITH THE EXACT SAME SETTINGS / BOOLEANS EXCEPT TIME
   seconds = 0;
   gameState = GAMESTATE;
   if(gameState == 0){
@@ -592,48 +598,29 @@ void makeOrbs(int GAMESTATE){//make a new simulation. Keep booleans in place but
 }
 
 void makeOrbs(boolean ordered) {//makes orbs ordered or unordered
-  if (SPIKES) { makeSpikes(10); /*make spikes if SPIKES is true*/} else { makeSpikes(0); }//make no spikes if SPIKES is not true
-  orbs = new Orb[NUM_ORBS];
-  // Create earth orb and fix it in place
-  earth = new Orb(width/2, earthRadius * PIXELS_PER_METER + height + 1, earthRadius * PIXELS_PER_METER * 2, massEarth);//the earth is the gravitational object things are attracted to. Also a physical object things collide on.
-  earth.attached = false;//earth has no spring.
-  earth.fixed = true;//program gets upset when this isn't fixed.
-  earth.updateMeters();//where is the earth in meters.
-
-  if (!linked) {//if array data
-    if (!ordered){//if we are not ordered, create orbs in a random location
-      for (int i = 0; i<orbs.length; i++) {
-        orbs[i] = new Orb();//randomly created orb
-      }
-  } else {//if ordered
-    for (int i = 0; i<orbs.length; i++) {
-      orbs[i] = new Orb();//make random orb to be put in order shortly
-      orbs[i].center.x = SPRING_LENGTH * (i) * PIXELS_PER_METER + 10;
-      orbs[i].center.y = height / 2;
-      orbs[i].updateMeters();
-      //add orbs with specific locations in order.
+  earth = new Orb(width / 2, earthRadius * PIXELS_PER_METER + height, earthRadius * 2 * PIXELS_PER_METER, massEarth);
+  earth.attached =  false;
+  earth.fixed = true;
+  int orbsToAdd = NUM_ORBS;
+  NUM_ORBS = 0;
+  orbs = new Orb[0];
+  slinky = null;
+  addOrb(earth);
+  for(int i = 1; i < orbsToAdd; i++){
+    Orb tempOrb = new Orb();
+    if(ordered){
+      tempOrb.center.x = 10 + i * SPRING_LENGTH * PIXELS_PER_METER;
+      tempOrb.center.y = height /  2;
+      tempOrb.updateMeters();
     }
-  }
-
-  orbs[0] = earth;//the first orb is earth.
-  } else {//if linked data type
-    slinky = new NodeList();//new NodeList object
-    slinky.front = earth.toNode();//the first object in the slinky is the earth.
-    slinky.end = slinky.front;//the end is the front at first
-    for (int i = 0; i <NUM_ORBS; i++) {//we're adding as #NUM_ORBS orbs
-      slinky.addFront(new Node());//add a random orb
-      if (ordered) {
-        slinky.front.center.x = SPRING_LENGTH * i * PIXELS_PER_METER + 10;//if the slinky is ordered, put them in the  right location
-        slinky.front.center.y = height / 2;
-        slinky.front.updateMeters();////since we're puttin it in  a specific pixel location,we  need to tell the simulation where it is in meters
-      }
-    }
-    slinky.front.c = color(255, 0, 0);
+    addOrb(tempOrb);
   }
 }
 
 void makeSolarSystem() {//make the solar system
+  NUM_ORBS = 0;
   orbs = new Orb[NUM_ORBS];
+  slinky = null;
   // Create and initialize each celestial body
   earth = new CelestialObject(0, distanceEarth, 10, massEarth, sizeEarth);//celestial bodies are described  by their location and size in space, not pixels. Attached is false by default.
   earth.c = color(0, 0, 255);
@@ -690,42 +677,22 @@ void makeSolarSystem() {//make the solar system
   moon.updatePixels();
 
   // Add planets to orbs array
-  if (linked) {
-    slinky = new NodeList(sun.toNode());
-    slinky.addFront(mercury.toNode());
-    slinky.addFront(venus.toNode());
-    slinky.addFront(earth.toNode());
-    slinky.addFront(moon.toNode());
-    slinky.addFront(mars.toNode());
-    slinky.addFront(jupiter.toNode());
-    slinky.addFront(saturn.toNode());
-    slinky.addFront(uranus.toNode());
-    slinky.addFront(neptune.toNode());
-    slinky.addFront(pluto.toNode());
-
-    Node tempNode = slinky.front;
-    while (tempNode.next != null) {
-      tempNode = tempNode.next;
-    }
-    PVectorD solarSystemMomentum = getSolarSystemMomentum();
-    PVectorD sunMomentum = solarSystemMomentum.copy().mult(-1);
-    tempNode.velocity = tempNode.momentumToVelocity(sunMomentum);
-  } else {
-    orbs[0] = sun;
-    orbs[1] = mercury;
-    orbs[2] = venus;
-    orbs[3] = earth;
-    orbs[4] = mars;
-    orbs[5] = jupiter;
-    orbs[6] = moon;
-    orbs[7] = saturn;
-    orbs[8] = uranus;
-    orbs[9] = neptune;
-    orbs[10] = pluto;
-    
-    PVectorD solarSystemMomentum = getSolarSystemMomentum();
-    PVectorD sunMomentum = solarSystemMomentum.copy().mult(-1);
-    sun.velocity = sun.momentumToVelocity(sunMomentum);
+  addOrb(sun);
+  addOrb(mercury);
+  addOrb(venus);
+  addOrb(earth);
+  addOrb(moon);
+  addOrb(mars);
+  addOrb(jupiter);
+  addOrb(saturn);
+  addOrb(uranus);
+  addOrb(neptune);
+  addOrb(pluto);
+  
+  PVectorD solarMomentum = getSolarSystemMomentum().mult(-1);
+  sun.velocity = sun.momentumToVelocity(solarMomentum);
+  if(linked){
+    slinky.end.velocity = sun.velocity;
   }
 }
 

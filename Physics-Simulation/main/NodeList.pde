@@ -6,10 +6,12 @@ class NodeList{
   //constructor
   NodeList(){
     front = new Node();
+    end = front;
   }
   
   NodeList(Node node){
     front = node;
+    end = front;
   }
   
   void addFront(Node newNode){
