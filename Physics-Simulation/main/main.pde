@@ -706,13 +706,13 @@ void makeSolarSystem() {//make the solar system
 }
 
 void makeAsteroidBelt(){
-  for(int i = 0; i < 100; i++){
+  for(int i = 0; i < 40; i++){
     double kgPerMeter3 = random(1000, 4000);
     double radius = random(5000);
     double volume = Math.pow(radius, 3) * 4 * PI / 3;
     double mass = volume * kgPerMeter3;
-    double distance = distanceJupiter * random(0.7, 0.9);
-    double speed = velocityJupiter * Math.sqrt(distanceJupiter / distance);
+    double distance = distanceJupiter * random(0.6, 1.3);
+    double speed = velocityJupiter * Math.sqrt(distanceJupiter / distance) * random(0.5, 1.5);
     float angle = random(2 * PI);
     Orb asteroid = new CelestialObject(distance * cos(angle), distance * sin(angle), mass, 1, radius * 2);
     asteroid.velocity.set(speed * sin(angle), speed * -cos(angle));
@@ -788,9 +788,10 @@ double deltaT;
 double solarSystemTimeMult = 3600 * 24 * 31 * 3;
 double defaultTimeMult = 1;
 // Solar system orbital constants,  units in kg, meters, or m/s as specified
+double AU = 149597870700.0;
 double massEarth = 5.97219 * pow(10, 24);
 double earthRadius = 6368100;
-double distanceEarth = 150 * pow(10, 9);
+double distanceEarth = AU;
 double velocityEarth = 29784.8;
 double sizeEarth = 12756000;
 
@@ -847,7 +848,7 @@ double K_CONSTANT = 100;
 double DRAG_CONSTANT = 10;
 double SPRING_LENGTH = 0.5;
 // Toggles
-boolean ASTEROIDS = true;
+boolean ASTEROIDS = false;
 boolean GRAVITY_FORCE;
 boolean SPRING_FORCE;
 boolean DRAG_FORCE;
