@@ -99,7 +99,7 @@ void drawPauseMenu() {
   text("PAUSED\n\n" +
     "t - Toggle toScale: " + toScale + "\n" +
     "p - Toggle Pause: " + paused + "\n" +
-    "v - Toggle low refresh rate and high precision \n" + 
+    "v - Toggle low render rate and high precision \n" + 
     "i - Impale: " + IMPALE + "\n"+
     "space - Toggle Motion: " + MOVING + "\n" +
     "b - Toggle Bounce: " + BOUNCE_FORCE + "\n" +
@@ -243,8 +243,8 @@ void keyPressed() {
     ASTEROIDS = !ASTEROIDS;
   } else if (key == 'v'){
     if(FRAMERATE == defaultFrameRate){
-      FRAMERATE = 650;
-      renderRate = 1;
+      FRAMERATE = highFrameRate;
+      renderRate = lowRenderRate;
     } else {
       FRAMERATE = defaultFrameRate;
       renderRate = defaultRenderRate;
@@ -404,8 +404,8 @@ void collide(Orb a, Orb b) {
     // Overlap correction
     double overlap = (minDist - dist) / 2;
     PVectorD correction = delta.copy().normalize().mult(overlap);
-    if (!a.fixed) a.centerMeters.sub(correction);
-    if (!b.fixed) b.centerMeters.add(correction);
+    if (a.bounces) a.centerMeters.sub(correction);
+    if (b.bounces) b.centerMeters.add(correction);
     a.updatePixels();
     b.updatePixels();
 
@@ -613,7 +613,7 @@ void makeOrbs(int GAMESTATE){//make a new simulation WITH THE EXACT SAME SETTING
 void makeOrbs(boolean ordered) {//makes orbs ordered or unordered
   earth = new Orb(width / 2, earthRadius * PIXELS_PER_METER + height, earthRadius * 2 * PIXELS_PER_METER, massEarth);
   earth.attached =  false;
-  earth.fixed = true;
+  earth.bounces = false;//earth does not bounce according to screen bounds
   int orbsToAdd = NUM_ORBS;
   NUM_ORBS = 0;
   orbs = new Orb[0];
@@ -789,9 +789,11 @@ double MIN_MASS = 10;
 double MAX_MASS = 100;
 double MAX_SIZE = 50;
 double MIN_SIZE = 10;
-int defaultRenderRate = 30;
+int defaultRenderRate = 45;
+int lowRenderRate = 1;
 int renderRate = defaultRenderRate;
-int defaultFrameRate = 260;
+int defaultFrameRate = 400;
+int highFrameRate = 1000;
 int FRAMERATE = defaultFrameRate;
 int NUM_ORBS = 10;
 int  NUM_SPIKES = 10;
@@ -801,6 +803,7 @@ double seconds;
 double deltaT;
 double solarSystemTimeMult = 3600 * 24 * 31 * 12;
 double defaultTimeMult = 1;
+
 // Solar system orbital constants,  units in kg, meters, or m/s as specified
 double AU = 149597870700.0;
 double massEarth = 5.97219 * pow(10, 24);

@@ -21,6 +21,6 @@ public class States{
     if(SPIKES){fill(0, 255, 0);} else {fill(255, 0, 0);} rect(w * 2, h, w, h); fill(0, 0, 0); text("Spawn Spikes", w/2 + 2*w, h/2 + h);
     if(toScale){fill(0, 255, 0);} else {fill(255, 0, 0);} rect(w * 3, h, w, h); fill(0, 0, 0); text("to scale", w/2 + 3*w, h/2 + h);
     if(tails){fill(0, 255, 0);} else {fill(255, 0, 0);} rect(w * 4, h, w, h); fill(0, 0, 0); text("tails", w/2 + 4*w, h/2 + h);
-    if(tails){fill(0, 255, 0);} else {fill(255, 0, 0);} rect(w * 5, h, w, h); fill(0, 0, 0); text("spawn asteroids", w/2 + 5*w, h/2 + h);
+    if(ASTEROIDS){fill(0, 255, 0);} else {fill(255, 0, 0);} rect(w * 5, h, w, h); fill(0, 0, 0); text("spawn asteroids", w/2 + 5*w, h/2 + h);
   }
 }

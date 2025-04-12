@@ -13,7 +13,7 @@ class Orb {
   double sizeMeters;          // Size in meters
   double radiusMeters;        // Radius in meters
   color c;                    // Orb color
-  boolean fixed;              // Is orb fixed in space
+  boolean bounces;            // Does orb bounce?
   boolean attached;           // Is orb attached by a spring
   boolean hasTail;            // Has a tale?
   Tail tail;
@@ -29,7 +29,7 @@ class Orb {
     centerMeters = center.copy().div(PIXELS_PER_METER);
     velocity = new PVectorD();
     acceleration = new PVectorD();
-    fixed = false;
+    bounces = true;
     attached = true;
     setColor();
     hasTail = true;
@@ -53,7 +53,6 @@ class Orb {
   void display() {
     noStroke();
     fill(c);
-    updatePixels();
     if(toScale){
       circle((float)center.x, (float)center.y, (float)sizeMeters * (float)PIXELS_PER_METER);
       circle((float)center.x, (float)center.y, 1);
@@ -71,6 +70,7 @@ class Orb {
     velocity.add(acceleration.copy().mult(deltaT));
     centerMeters.add(velocity.copy().mult(deltaT));
     acceleration.mult(0);
+    updatePixels();
     }
 
   // Apply a force (in Newtons)
@@ -112,7 +112,7 @@ class Orb {
   }
   
   void bounce(){
-    if(!fixed){
+    if(bounces){
       xBounce();
       yBounce();
     } 
@@ -181,7 +181,7 @@ class Orb {
     tempNode.size =size;                // Size in pixels
     tempNode.radius = radius;              // Radius in pixels
     tempNode.c = c;                    // Orb color
-    tempNode.fixed = fixed;              // Is orb fixed in space
+    tempNode.bounces = bounces;              //Does it bounce
     tempNode.attached = attached;           // Is orb attached by a spring
     tempNode.radiusMeters = radiusMeters;
     tempNode.sizeMeters = sizeMeters;
