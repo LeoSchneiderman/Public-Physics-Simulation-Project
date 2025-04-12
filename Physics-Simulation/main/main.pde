@@ -12,7 +12,7 @@ void setup() {
 }
 
 void draw() {
-  if (!paused) update(); // Physics updates
+  if (!paused) {update();}// Physics updates
   if(frameCount % (FRAMERATE / renderRate) == 0) { display(); }// Rendering
 }
 
@@ -139,10 +139,10 @@ void displayTime() {//display the time that has passed
 }
 
 String getSeconds() {
-  return (int)seconds + "." + (int)((seconds % 1) * 10);//return the seconds rounded down to the first decimal
+  return (int)seconds % 60 + "." + (int)((seconds % 1) * 10);//return the seconds rounded down to the first decimal
 }
 int getMinutes() {
-  return (int)seconds / 60;//integral minutes
+  return ((int)seconds / 60) % 60;//integer minutes
 }
 
 int getHours() {
@@ -717,13 +717,13 @@ void makeSolarSystem() {//make the solar system
 }
 
 void makeAsteroidBelt(){
-  for(int i = 0; i < 40; i++){
+  for(int i = 0; i < 100; i++){
     double kgPerMeter3 = random(1000, 4000);
     double radius = random(5000);
     double volume = Math.pow(radius, 3) * 4 * PI / 3;
     double mass = volume * kgPerMeter3;
-    double distance = distanceJupiter * random(0.6, 1.3);
-    double speed = velocityJupiter * Math.sqrt(distanceJupiter / distance) * random(0.5, 1.5);
+    double distance = distanceJupiter * random(0.8, 0.9);
+    double speed = velocityJupiter * Math.sqrt(distanceJupiter / distance) * random(0.9, 1.1);
     float angle = random(2 * PI);
     Orb asteroid = new CelestialObject(distance * cos(angle), distance * sin(angle), mass, 1, radius * 2);
     asteroid.velocity.set(speed * sin(angle), speed * -cos(angle));
