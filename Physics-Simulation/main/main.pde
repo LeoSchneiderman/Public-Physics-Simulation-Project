@@ -13,7 +13,7 @@ void setup() {
 
 void draw() {
   if (!paused) update(); // Physics updates
-  display(); // Rendering
+  if(frameCount % (FRAMERATE / 60) == 0) { display(); }// Rendering
 }
 
 // =========================
@@ -133,7 +133,7 @@ void displayTime() {//display the time that has passed
     text += getYears() + " years";
   }
   textAlign(LEFT);
-  text(text, 50, height * 19 / 20);
+  text(text, 50, height);
 }
 
 String getSeconds() {
@@ -531,6 +531,7 @@ void addOrb(Orb orb) {//add a specific orb
 }
 
 void setConstants(){
+  doNotDisplay = false;
   if(gameState == 0 || gameState == 1){
     //set booleans
     tails = false;
@@ -778,14 +779,14 @@ double MIN_MASS = 10;
 double MAX_MASS = 100;
 double MAX_SIZE = 50;
 double MIN_SIZE = 10;
-int FRAMERATE = 200;
+int FRAMERATE = 300;
 int NUM_ORBS = 10;
 int  NUM_SPIKES = 10;
 double PIXELS_PER_METER = 100;
 double timeMult;
 double seconds;
 double deltaT;
-double solarSystemTimeMult = 3600 * 24 * 31 * 3;
+double solarSystemTimeMult = 3600 * 24 * 31 * 12;
 double defaultTimeMult = 1;
 // Solar system orbital constants,  units in kg, meters, or m/s as specified
 double AU = 149597870700.0;
@@ -848,6 +849,7 @@ double K_CONSTANT = 100;
 double DRAG_CONSTANT = 10;
 double SPRING_LENGTH = 0.5;
 // Toggles
+boolean doNotDisplay = false;//purpose is for running the simulation without drawing it to save resources.
 boolean ASTEROIDS = false;
 boolean GRAVITY_FORCE;
 boolean SPRING_FORCE;
