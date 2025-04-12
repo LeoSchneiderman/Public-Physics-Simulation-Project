@@ -13,7 +13,7 @@ void setup() {
 
 void draw() {
   if (!paused) update(); // Physics updates
-  if(frameCount % (FRAMERATE / 60) == 0) { display(); }// Rendering
+  if(frameCount % (FRAMERATE / renderRate) == 0) { display(); }// Rendering
 }
 
 // =========================
@@ -33,6 +33,7 @@ void display() {//display everything
     drawPauseMenu();//draw the pause menu if paused
   }
   displayTime();//draw the time
+  text("frameRate: " + FRAMERATE + ", renderRate: " + renderRate + ", actual frameRate: " + frameRate, 40, height - 40);
 }
 
 void displayOrbs() {//display all orbs
@@ -98,6 +99,7 @@ void drawPauseMenu() {
   text("PAUSED\n\n" +
     "t - Toggle toScale: " + toScale + "\n" +
     "p - Toggle Pause: " + paused + "\n" +
+    "v - Toggle low refresh rate and high precision \n" + 
     "i - Impale: " + IMPALE + "\n"+
     "space - Toggle Motion: " + MOVING + "\n" +
     "b - Toggle Bounce: " + BOUNCE_FORCE + "\n" +
@@ -114,7 +116,7 @@ void drawPauseMenu() {
     "1 - ordered orbs \n 2 - unordered orbs \n 3 - solar system \n" +
     "+ - add orb \n - - remove orb \n "+
     "scroll wheel to zoom in and out of space simulation",
-    40, 40);
+    40, 0);
 }
 
 void displayTime() {//display the time that has passed
@@ -239,6 +241,15 @@ void keyPressed() {
     makeOrbs(gameState);
   }  else  if (key == 'a'){
     ASTEROIDS = !ASTEROIDS;
+  } else if (key == 'v'){
+    if(FRAMERATE == defaultFrameRate){
+      FRAMERATE = 650;
+      renderRate = 1;
+    } else {
+      FRAMERATE = defaultFrameRate;
+      renderRate = defaultRenderRate;
+    }
+    frameRate(FRAMERATE);
   }
 }
 
@@ -531,7 +542,6 @@ void addOrb(Orb orb) {//add a specific orb
 }
 
 void setConstants(){
-  doNotDisplay = false;
   if(gameState == 0 || gameState == 1){
     //set booleans
     tails = false;
@@ -779,7 +789,10 @@ double MIN_MASS = 10;
 double MAX_MASS = 100;
 double MAX_SIZE = 50;
 double MIN_SIZE = 10;
-int FRAMERATE = 300;
+int defaultRenderRate = 30;
+int renderRate = defaultRenderRate;
+int defaultFrameRate = 260;
+int FRAMERATE = defaultFrameRate;
 int NUM_ORBS = 10;
 int  NUM_SPIKES = 10;
 double PIXELS_PER_METER = 100;
@@ -849,7 +862,6 @@ double K_CONSTANT = 100;
 double DRAG_CONSTANT = 10;
 double SPRING_LENGTH = 0.5;
 // Toggles
-boolean doNotDisplay = false;//purpose is for running the simulation without drawing it to save resources.
 boolean ASTEROIDS = false;
 boolean GRAVITY_FORCE;
 boolean SPRING_FORCE;
