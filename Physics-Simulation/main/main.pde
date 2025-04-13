@@ -12,7 +12,7 @@ void setup() {
 }
 
 void draw() {
-  if (!paused) {update();}// Physics updates
+  if (!paused) {update(); println(getSolarSystemMomentum());}// Physics updates
   if(frameCount % (FRAMERATE / renderRate) == 0) { display(); }// Rendering
 }
 
@@ -281,21 +281,18 @@ void applySprings() {
     Node tempNode = slinky.front;
     while (tempNode != null && tempNode.next != null) {
       if (tempNode.attached && tempNode.next.attached) {
-        tempNode.applyForce(tempNode.getSpring(tempNode.next, SPRING_LENGTH, K_CONSTANT));
-        tempNode.next.applyForce(tempNode.next.getSpring(tempNode, SPRING_LENGTH, K_CONSTANT));
+        PVectorD force = tempNode.getSpring(tempNode.next, SPRING_LENGTH, K_CONSTANT);
+        tempNode.applyForce(force);
+        tempNode.next.applyForce(force.mult(-1));
       }
       tempNode = tempNode.next;
     }
   } else {
-    for (int i = 0; i < orbs.length; i++) {
-      if (orbs[i] != null && orbs[i].attached) {
-        // Apply spring force to neighbors
-        if (i + 1 < orbs.length && orbs[i+1] != null && orbs[i+1].attached) {
-          orbs[i].applyForce(orbs[i].getSpring(orbs[i+1], SPRING_LENGTH, K_CONSTANT));
-        }
-        if (i - 1 >= 0 && orbs[i-1] != null && orbs[i-1].attached) {
-          orbs[i].applyForce(orbs[i].getSpring(orbs[i-1], SPRING_LENGTH, K_CONSTANT));
-        }
+    for (int i = 0; i < NUM_ORBS; i++) {
+      if (i + 1 < NUM_ORBS && orbs[i] != null && orbs[i].attached && orbs[i+1] != null && orbs[i + 1].attached) {
+        PVectorD force = orbs[i].getSpring(orbs[i+1], SPRING_LENGTH, K_CONSTANT);
+        orbs[i].applyForce(force);
+        orbs[i+1].applyForce(force.mult(-1));
       }
     }
   }
@@ -309,7 +306,7 @@ void applyBounce() {
       tempNode = tempNode.next;
     }
   } else {
-    for (int i = 0; i < orbs.length; i++) {
+    for (int i = 0; i < NUM_ORBS; i++) {
       if (orbs[i] != null) {
         orbs[i].bounce();
       }
@@ -323,17 +320,20 @@ void applyGravity() {
     while (tempNode1 != null) {
       Node tempNode2 = tempNode1.next;
       while (tempNode2 != null) {
-        tempNode1.applyForce(tempNode1.getGravity(tempNode2, G_CONSTANT));
-        tempNode2.applyForce(tempNode2.getGravity(tempNode1, G_CONSTANT));
+        PVectorD force = tempNode1.getGravity(tempNode2, G_CONSTANT);
+        tempNode1.applyForce(force);
+        tempNode2.applyForce(force.mult(-1));;
         tempNode2 = tempNode2.next;
       }
       tempNode1 = tempNode1.next;
     }
   } else {
-    for (int i = 0; i < orbs.length; i++) {
-      for (int j = 0; j < orbs.length; j++) {
-        if (i != j && orbs[i] != null && orbs[j] != null) {
-          orbs[i].applyForce(orbs[i].getGravity(orbs[j], G_CONSTANT));
+    for (int i = 0; i < NUM_ORBS; i++) {
+      for (int j = i+1; j < NUM_ORBS; j++) {
+        if (orbs[i] != null && orbs[j] != null) {
+          PVectorD force = orbs[i].getGravity(orbs[j], G_CONSTANT);
+          orbs[i].applyForce(force);
+          orbs[j].applyForce(force.mult(-1));
         }
       }
     }
@@ -363,7 +363,7 @@ void applyImpales() {
 }
 
 void applyDrag() {
-  for (int i = 0; i < orbs.length; i++) {
+  for (int i = 0; i < NUM_ORBS; i++) {
     if (orbs[i] != null) {
       orbs[i].applyForce(orbs[i].getDrag(DRAG_CONSTANT));
     }
@@ -408,6 +408,8 @@ void collide(Orb a, Orb b) {
     if (b.bounces) b.centerMeters.add(correction);
     a.updatePixels();
     b.updatePixels();
+    b.velocity = b.getVelocity();
+    a.velocity = a.getVelocity();
 
     // Elastic collision response
     PVectorD normal = delta.copy().normalize();
@@ -420,6 +422,8 @@ void collide(Orb a, Orb b) {
     PVectorD impulse = normal.copy().mult(impulseMag);
     a.velocity.sub(impulse.copy().div(a.mass));
     b.velocity.add(impulse.copy().div(b.mass));
+    a.momentum = a.getMomentum();
+    b.momentum = b.getMomentum();
   }
 }
 
@@ -431,7 +435,7 @@ void moveOrbs(){//move all orbs
       tempNode = tempNode.next;
     }
   } else {
-    for (int i = 0; i < orbs.length; i++) {
+    for (int i = 0; i < NUM_ORBS; i++) {
       if (orbs[i] != null) {
         orbs[i].move(); // Update orb position
       }
@@ -538,6 +542,7 @@ void addOrb(Orb orb) {//add a specific orb
     } else {
       slinky = new NodeList(orb.toNode());
     }
+    NUM_ORBS++;
   }//if not an array, add a node copy of the orb to the slinky data
 }
 
@@ -641,56 +646,67 @@ void makeSolarSystem() {//make the solar system
   earth = new CelestialObject(0, distanceEarth, massEarth, 10, sizeEarth);//celestial bodies are described  by their location and size in space, not pixels. Attached is false by default.
   earth.c = color(0, 0, 255);
   earth.velocity.set(29784, 0);
+  earth.momentum = earth.getMomentum();
   earth.updatePixels();
 
   sun = new CelestialObject(0, 0, massSun, 25, sizeSun);
   sun.tail.maxTime = (double)3600 * 24 * 365 * 100;
   sun.c = color(255, 100, 0);
+  sun.momentum = sun.getMomentum();
   sun.updatePixels();
 
   mars = new CelestialObject(0, distanceMars, massMars, 10, sizeMars);
   mars.c = color(255, 0, 0);
   mars.velocity.set(velocityMars, 0);
+  mars.momentum = mars.getMomentum();
   mars.updatePixels();
 
   venus = new CelestialObject(0, distanceVenus, massVenus, 10, sizeVenus);
   venus.c = color(165, 124, 27);
   venus.velocity.set(velocityVenus, 0);
+  venus.momentum = venus.getMomentum();
   venus.updatePixels();
 
   mercury = new CelestialObject(0, distanceMercury, massMercury, 10, sizeMercury);
   mercury.c = color(183, 184, 185);
   mercury.velocity.set(velocityMercury, 0);
+  mercury.momentum = mercury.getMomentum();
   mercury.updatePixels();
 
   jupiter = new CelestialObject(0, distanceJupiter, massJupiter, 15, sizeJupiter);
   jupiter.c = color(180, 167, 158);
   jupiter.velocity.set(velocityJupiter, 0);
+  jupiter.momentum = jupiter.getMomentum();
   jupiter.updatePixels();
 
   saturn = new CelestialObject(0, distanceSaturn, massSaturn, 13, sizeSaturn);
   saturn.c = color(210, 180, 140);
   saturn.velocity.set(velocitySaturn, 0);
+  saturn.momentum = saturn.getMomentum();
   saturn.updatePixels();
 
   uranus = new CelestialObject(0, distanceUranus, massUranus, 12, sizeUranus);
   uranus.c = color(173, 216, 230);
   uranus.velocity.set(velocityUranus, 0);
+  uranus.momentum = uranus.getMomentum();
   uranus.updatePixels();
 
   neptune = new CelestialObject(0, distanceNeptune, massNeptune, 12, sizeNeptune);
   neptune.c = color(72, 61, 139);
   neptune.velocity.set(velocityNeptune, 0);
+  neptune.momentum = neptune.getMomentum();
   neptune.updatePixels();
 
   pluto = new CelestialObject(0, distancePluto, massPluto, 4, sizePluto);
   pluto.c = color(190, 190, 190);
   pluto.velocity.set(velocityPluto, 0);
+  pluto.momentum = pluto.getMomentum();
   pluto.updatePixels();
 
   moon = new CelestialObject(0, earth.centerMeters.y + distanceMoonFromEarth, massMoon, 3, sizeMoon);
   moon.c = color(255);
   moon.velocity.set(velocityMoonFromEarth + velocityEarth, 0);
+  moon.momentum = moon.getMomentum();
   moon.updatePixels();
 
   // Add planets to orbs array
@@ -709,10 +725,9 @@ void makeSolarSystem() {//make the solar system
     makeAsteroidBelt();
   }
   
-  PVectorD solarMomentum = getSolarSystemMomentum().mult(-1);
-  sun.velocity = sun.momentumToVelocity(solarMomentum);
+  sun.momentum = getSolarSystemMomentum().mult(-1);
   if(linked){
-    slinky.end.velocity = sun.velocity;
+    slinky.end.momentum = sun.momentum;
   }
 }
 
@@ -727,6 +742,7 @@ void makeAsteroidBelt(){
     float angle = random(2 * PI);
     Orb asteroid = new CelestialObject(distance * cos(angle), distance * sin(angle), mass, 1, radius * 2);
     asteroid.velocity.set(speed * sin(angle), speed * -cos(angle));
+    asteroid.momentum = asteroid.getMomentum();
     asteroid.c = color(255);
     asteroid.tail.maxTime = 3600 * 24 * 5;
     addOrb(asteroid);
@@ -741,12 +757,12 @@ PVectorD getSolarSystemMomentum() {//return the momentum of the solar system. By
   if (linked) {
     Node tempNode = slinky.front;
     while (tempNode != null) {
-      momentum.add(tempNode.getMomentum());
+      momentum.add(tempNode.momentum);
       tempNode = tempNode.next;
     }
   } else {
     for (int i = 0; i < NUM_ORBS; i++) {
-      momentum.add(orbs[i].getMomentum());
+      momentum.add(orbs[i].momentum);
     }
   }
   return momentum;
