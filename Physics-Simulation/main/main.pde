@@ -363,7 +363,13 @@ void applyImpales() {
 }
 
 void applyDrag() {
-  for (int i = 0; i < NUM_ORBS; i++) {
+  if(linked){
+    Node tempNode = slinky.front;
+    while(tempNode != null){
+      tempNode.applyForce(tempNode.getDrag(DRAG_CONSTANT));
+      tempNode = tempNode.next;
+    }
+  } else for (int i = 0; i < NUM_ORBS; i++) {
     if (orbs[i] != null) {
       orbs[i].applyForce(orbs[i].getDrag(DRAG_CONSTANT));
     }
@@ -510,6 +516,11 @@ void removeOrb(int j) {//remove an orb at index j
   for (int i = j; i < orbs.length -1; i++) { orbs[i] = orbs[i+1]; }//shift every  orb after the one we are removing  backwards
   orbs[orbs.length - 1] = null;//the last orb has been shifted back, so remove it from it's previous location..
   NUM_ORBS--;//one less orb
+  Orb[] tempOrbs = new Orb[NUM_ORBS];
+  for(int i = 0; i < NUM_ORBS; i++){
+    tempOrbs[i] = orbs[i];
+  }
+  orbs = tempOrbs;
 }
 
 
@@ -532,7 +543,7 @@ void addOrb(Orb orb) {//add a specific orb
         return;//finish the function
       }
     }
-    Orb[] tempOrbs = new Orb[orbs.length + 50];//if there is not space, make a new longer array
+    Orb[] tempOrbs = new Orb[orbs.length + 1];//if there is not space, make a new longer array
     for (int i = 0; i < orbs.length; i++) { tempOrbs[i] = orbs[i]; }//copy the contents of the old array into the new one
     orbs = tempOrbs;//orbs is now the newly created array
     addOrb(orb);//we add the orb to the new arary
